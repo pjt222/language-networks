@@ -23,5 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
+# Rust build artifacts
+backend/target/
+
 # Downloaded corpora (re-download with: npm run download-corpora)
 public/data/
