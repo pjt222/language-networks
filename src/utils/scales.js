@@ -5,7 +5,7 @@ export function createNodeSizeScale(nodes) {
   return d3
     .scaleSqrt()
     .domain([d3.min(frequencies) || 1, d3.max(frequencies) || 1])
-    .range([4, 30]);
+    .range([10, 30]);
 }
 
 export function createEdgeWidthScale(links) {

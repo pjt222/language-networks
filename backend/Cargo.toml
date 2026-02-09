@@ -1,0 +1,13 @@
+[package]
+name = "language-networks-backend"
+version = "0.1.0"
+edition = "2021"
+description = "Rust backend for Language Networks — corpus processing and graph API"
+authors = ["Philipp Thoss <ph.thoss@gmx.de>"]
+
+[dependencies]
+axum = "0.8"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tower-http = { version = "0.6", features = ["fs", "cors"] }

@@ -9,9 +9,9 @@ import {
 } from '../src/utils/scales.js';
 
 describe('createNodeSizeScale', () => {
-  it('maps frequencies to size range [4, 30]', () => {
+  it('maps frequencies to size range [10, 30]', () => {
     const scale = createNodeSizeScale([{ frequency: 1 }, { frequency: 100 }]);
-    expect(scale(1)).toBeCloseTo(4, 0);
+    expect(scale(1)).toBeCloseTo(10, 0);
     expect(scale(100)).toBeCloseTo(30, 0);
   });
 

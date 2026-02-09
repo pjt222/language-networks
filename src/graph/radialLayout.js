@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { ROOT_ID } from '../corpus/graphBuilder.js';
+import { buildHierarchyFromGraph } from './hierarchyBuilder.js';
 import { createPositionRadiusScale } from '../utils/scales.js';
 
 export function createRadialLayout(nodes, links, { width, height, maxPosition }) {
@@ -8,42 +8,7 @@ export function createRadialLayout(nodes, links, { width, height, maxPosition })
   const maxRadius = Math.min(width, height) / 2 - 60;
   const radiusScale = createPositionRadiusScale(maxPosition, maxRadius);
 
-  const adjacency = new Map();
-  for (const link of links) {
-    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-    if (!adjacency.has(sourceId)) adjacency.set(sourceId, []);
-    adjacency.get(sourceId).push({ targetId, weight: link.weight });
-  }
-
-  for (const [, children] of adjacency) {
-    children.sort((a, b) => b.weight - a.weight);
-  }
-
-  const nodeById = new Map(nodes.map((n) => [n.id, n]));
-  const visited = new Set();
-  const treeEdges = new Set();
-  const treeChildren = new Map();
-
-  const queue = [ROOT_ID];
-  visited.add(ROOT_ID);
-  treeChildren.set(ROOT_ID, []);
-
-  while (queue.length > 0) {
-    const currentId = queue.shift();
-    const neighbors = adjacency.get(currentId) || [];
-    for (const { targetId } of neighbors) {
-      if (!visited.has(targetId)) {
-        visited.add(targetId);
-        treeEdges.add(`${currentId}->${targetId}`);
-        if (!treeChildren.has(currentId)) treeChildren.set(currentId, []);
-        treeChildren.get(currentId).push(targetId);
-        queue.push(targetId);
-      }
-    }
-  }
-
-  const hierarchyData = buildHierarchy(ROOT_ID, treeChildren, nodeById);
+  const { hierarchyData, treeEdges } = buildHierarchyFromGraph(nodes, links);
 
   const root = d3.hierarchy(hierarchyData);
   const treeLayout = d3.tree().size([2 * Math.PI, maxRadius]).separation((a, b) => {
@@ -52,13 +17,14 @@ export function createRadialLayout(nodes, links, { width, height, maxPosition })
 
   treeLayout(root);
 
+  // Seed initial positions from tree layout, then unlock for simulation
   const positionMap = new Map();
   root.each((treeNode) => {
     const angle = treeNode.x;
     const radius = radiusScale(treeNode.data.position);
     const x = centerX + radius * Math.cos(angle - Math.PI / 2);
     const y = centerY + radius * Math.sin(angle - Math.PI / 2);
-    positionMap.set(treeNode.data.id, { x, y });
+    positionMap.set(treeNode.data.id, { x, y, targetRadius: radius });
   });
 
   for (const node of nodes) {
@@ -66,15 +32,38 @@ export function createRadialLayout(nodes, links, { width, height, maxPosition })
     if (pos) {
       node.x = pos.x;
       node.y = pos.y;
+      node._targetRadius = pos.targetRadius;
     } else {
       const angle = Math.random() * 2 * Math.PI;
       const radius = radiusScale(node.position);
       node.x = centerX + radius * Math.cos(angle);
       node.y = centerY + radius * Math.sin(angle);
+      node._targetRadius = radius;
     }
-    node.fx = node.x;
-    node.fy = node.y;
+    // No fx/fy — let the simulation run freely
   }
+
+  // Build force simulation with radial constraints
+  const simulation = d3
+    .forceSimulation(nodes)
+    .force(
+      'radial',
+      d3.forceRadial((d) => d._targetRadius, centerX, centerY).strength(0.8)
+    )
+    .force(
+      'charge',
+      d3.forceManyBody().strength(-60).distanceMax(200)
+    )
+    .force(
+      'collide',
+      d3.forceCollide().radius((d) => (d._radius || 10) + 4).strength(0.9).iterations(3)
+    )
+    .force(
+      'link',
+      d3.forceLink(links).id((d) => d.id).distance(30).strength(0.3)
+    )
+    .alphaDecay(0.02)
+    .velocityDecay(0.3);
 
   const nonTreeLinks = links.filter((link) => {
     const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
@@ -82,18 +71,7 @@ export function createRadialLayout(nodes, links, { width, height, maxPosition })
     return !treeEdges.has(`${sourceId}->${targetId}`);
   });
 
-  return { treeEdges, nonTreeLinks, radiusScale, centerX, centerY };
-}
-
-function buildHierarchy(nodeId, treeChildren, nodeById) {
-  const node = nodeById.get(nodeId);
-  const children = treeChildren.get(nodeId) || [];
-  return {
-    id: nodeId,
-    position: node ? node.position : 0,
-    character: node ? node.character : '',
-    children: children.map((childId) => buildHierarchy(childId, treeChildren, nodeById)),
-  };
+  return { treeEdges, nonTreeLinks, radiusScale, centerX, centerY, simulation };
 }
 
 export function renderRadialRings(container, maxPosition, radiusScale, centerX, centerY) {

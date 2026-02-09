@@ -335,6 +335,17 @@ input[type="range"] {
   opacity: 1 !important;
 }
 
+/* Layout decorations */
+.hive-axes line {
+  pointer-events: none;
+}
+
+.hive-axes text,
+.circular-markers text {
+  pointer-events: none;
+  user-select: none;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   #controls {

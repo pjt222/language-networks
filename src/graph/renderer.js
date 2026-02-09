@@ -63,7 +63,7 @@ export function renderNodes(container, nodes, scales, callbacks = {}) {
       if (d.character === 'END') return '\u25A0';
       return d.character;
     })
-    .attr('font-size', (d) => Math.max(8, Math.min(nodeSizeScale(d.frequency) * 1.1, 16)))
+    .attr('font-size', (d) => Math.max(9, Math.min(nodeSizeScale(d.frequency) * 0.9, 16)))
     .attr('dy', '0.35em')
     .attr('text-anchor', 'middle');
 
@@ -83,20 +83,46 @@ export function renderNodes(container, nodes, scales, callbacks = {}) {
   return nodeMerge;
 }
 
-export function updateLinkPaths(linkSelection, isRadial = false) {
+export function updateLinkPaths(linkSelection, linkPathStyle = 'straight') {
+  // Backward compat: boolean true → 'radial', false → 'straight'
+  if (linkPathStyle === true) linkPathStyle = 'radial';
+  if (linkPathStyle === false) linkPathStyle = 'straight';
+
   linkSelection.attr('d', (d) => {
     const sourceX = d.source.x || 0;
     const sourceY = d.source.y || 0;
     const targetX = d.target.x || 0;
     const targetY = d.target.y || 0;
 
+    if (linkPathStyle === 'step') {
+      const midX = (sourceX + targetX) / 2;
+      return `M${sourceX},${sourceY} H${midX} V${targetY} H${targetX}`;
+    }
+
+    if (linkPathStyle === 'arc') {
+      const center = d._layoutCenter || { x: 0, y: 0 };
+      const cpX = center.x + (sourceX + targetX - 2 * center.x) * 0.15;
+      const cpY = center.y + (sourceY + targetY - 2 * center.y) * 0.15;
+      return `M${sourceX},${sourceY} Q${cpX},${cpY} ${targetX},${targetY}`;
+    }
+
+    if (linkPathStyle === 'hive') {
+      const dx = targetX - sourceX;
+      const dy = targetY - sourceY;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      const rx = dist / 2;
+      const ry = dist / 2;
+      return `M${sourceX},${sourceY} A${rx},${ry} 0 0,1 ${targetX},${targetY}`;
+    }
+
+    // 'straight' and 'radial' both use line paths, but 'straight' adds self-loop curves
     const sourceNode = d.source;
     const targetNode = d.target;
     const isSelfLoop =
       sourceNode.character === targetNode.character &&
       Math.abs((sourceNode.position || 0) - (targetNode.position || 0)) === 1;
 
-    if (isSelfLoop && !isRadial) {
+    if (isSelfLoop && linkPathStyle === 'straight') {
       const midX = (sourceX + targetX) / 2;
       const midY = (sourceY + targetY) / 2;
       const dx = targetX - sourceX;

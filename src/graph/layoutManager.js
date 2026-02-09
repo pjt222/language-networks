@@ -2,6 +2,10 @@ import * as d3 from 'd3';
 import { ROOT_ID } from '../corpus/graphBuilder.js';
 import { createForceLayout, setupDrag } from './forceLayout.js';
 import { createRadialLayout, renderRadialRings } from './radialLayout.js';
+import { createHierarchicalLayout } from './hierarchicalLayout.js';
+import { createClusterLayout } from './clusterLayout.js';
+import { createCircularLayout, renderCircularPositionMarkers } from './circularLayout.js';
+import { createHiveLayout, renderHiveAxes } from './hiveLayout.js';
 import {
   renderLinks,
   renderNodes,
@@ -97,6 +101,12 @@ export class LayoutManager {
     return { nodes: filteredNodes, links: filteredLinks, meta: this.graphData.meta };
   }
 
+  _cleanupDecorations() {
+    this.zoomGroup.selectAll('.radial-rings').remove();
+    this.zoomGroup.selectAll('.circular-markers').remove();
+    this.zoomGroup.selectAll('.hive-axes').remove();
+  }
+
   render() {
     if (this.simulation) {
       this.simulation.stop();
@@ -126,7 +136,7 @@ export class LayoutManager {
 
     const scales = { nodeSizeScale, edgeWidthScale, edgeColorScale, nodeColorScale };
 
-    this.zoomGroup.selectAll('.radial-rings').remove();
+    this._cleanupDecorations();
 
     const resolvedLinks = links.map((l) => ({
       ...l,
@@ -134,15 +144,32 @@ export class LayoutManager {
       target: typeof l.target === 'object' ? l.target.id : l.target,
     }));
 
-    if (this.currentLayout === 'force') {
-      this._renderForce(nodes, resolvedLinks, scales, width, height, meta);
-    } else {
-      this._renderRadial(nodes, resolvedLinks, scales, width, height, meta);
+    switch (this.currentLayout) {
+      case 'force':
+        this._renderForce(nodes, resolvedLinks, scales, width, height, meta);
+        break;
+      case 'radial':
+        this._renderRadial(nodes, resolvedLinks, scales, width, height, meta);
+        break;
+      case 'hierarchical':
+        this._renderHierarchical(nodes, resolvedLinks, scales, width, height, meta);
+        break;
+      case 'cluster':
+        this._renderCluster(nodes, resolvedLinks, scales, width, height, meta);
+        break;
+      case 'circular':
+        this._renderCircular(nodes, resolvedLinks, scales, width, height, meta);
+        break;
+      case 'hive':
+        this._renderHive(nodes, resolvedLinks, scales, width, height, meta);
+        break;
+      default:
+        this._renderForce(nodes, resolvedLinks, scales, width, height, meta);
     }
   }
 
   _renderForce(nodes, links, scales, width, height, meta) {
-    this.linkSelection = renderLinks(this.linkGroup, links, scales, false);
+    this.linkSelection = renderLinks(this.linkGroup, links, scales);
     this.nodeSelection = renderNodes(this.nodeGroup, nodes, scales, this.callbacks);
 
     this.simulation = createForceLayout(nodes, links, {
@@ -155,19 +182,40 @@ export class LayoutManager {
     this.nodeSelection.call(drag);
 
     this.simulation.on('tick', () => {
-      updateLinkPaths(this.linkSelection, false);
+      updateLinkPaths(this.linkSelection, 'straight');
       updateNodePositions(this.nodeSelection);
     });
   }
 
   _renderRadial(nodes, links, scales, width, height, meta) {
-    const { radiusScale, centerX, centerY } = createRadialLayout(nodes, links, {
+    const { radiusScale, centerX, centerY, simulation } = createRadialLayout(nodes, links, {
       width,
       height,
       maxPosition: meta.maxPosition,
     });
 
     renderRadialRings(this.zoomGroup, meta.maxPosition, radiusScale, centerX, centerY);
+
+    this.linkSelection = renderLinks(this.linkGroup, links, scales);
+    this.nodeSelection = renderNodes(this.nodeGroup, nodes, scales, this.callbacks);
+
+    this.simulation = simulation;
+
+    const drag = setupDrag(this.simulation);
+    this.nodeSelection.call(drag);
+
+    this.simulation.on('tick', () => {
+      updateLinkPaths(this.linkSelection, 'radial');
+      updateNodePositions(this.nodeSelection);
+    });
+  }
+
+  _renderHierarchical(nodes, links, scales, width, height, meta) {
+    createHierarchicalLayout(nodes, links, {
+      width,
+      height,
+      maxPosition: meta.maxPosition,
+    });
 
     const nodeById = new Map(nodes.map((n) => [n.id, n]));
     const resolvedLinks = links.map((l) => ({
@@ -176,10 +224,77 @@ export class LayoutManager {
       target: nodeById.get(typeof l.target === 'object' ? l.target.id : l.target) || l.target,
     }));
 
-    this.linkSelection = renderLinks(this.linkGroup, resolvedLinks, scales, true);
+    this.linkSelection = renderLinks(this.linkGroup, resolvedLinks, scales);
     this.nodeSelection = renderNodes(this.nodeGroup, nodes, scales, this.callbacks);
 
-    updateLinkPaths(this.linkSelection, true);
+    updateLinkPaths(this.linkSelection, 'straight');
+    updateNodePositions(this.nodeSelection);
+  }
+
+  _renderCluster(nodes, links, scales, width, height, meta) {
+    createClusterLayout(nodes, links, {
+      width,
+      height,
+      maxPosition: meta.maxPosition,
+    });
+
+    const nodeById = new Map(nodes.map((n) => [n.id, n]));
+    const resolvedLinks = links.map((l) => ({
+      ...l,
+      source: nodeById.get(typeof l.source === 'object' ? l.source.id : l.source) || l.source,
+      target: nodeById.get(typeof l.target === 'object' ? l.target.id : l.target) || l.target,
+    }));
+
+    this.linkSelection = renderLinks(this.linkGroup, resolvedLinks, scales);
+    this.nodeSelection = renderNodes(this.nodeGroup, nodes, scales, this.callbacks);
+
+    updateLinkPaths(this.linkSelection, 'step');
+    updateNodePositions(this.nodeSelection);
+  }
+
+  _renderCircular(nodes, links, scales, width, height, meta) {
+    const circularResult = createCircularLayout(nodes, links, {
+      width,
+      height,
+      maxPosition: meta.maxPosition,
+    });
+
+    renderCircularPositionMarkers(this.zoomGroup, nodes, circularResult);
+
+    const nodeById = new Map(nodes.map((n) => [n.id, n]));
+    const resolvedLinks = links.map((l) => ({
+      ...l,
+      source: nodeById.get(typeof l.source === 'object' ? l.source.id : l.source) || l.source,
+      target: nodeById.get(typeof l.target === 'object' ? l.target.id : l.target) || l.target,
+    }));
+
+    this.linkSelection = renderLinks(this.linkGroup, resolvedLinks, scales);
+    this.nodeSelection = renderNodes(this.nodeGroup, nodes, scales, this.callbacks);
+
+    updateLinkPaths(this.linkSelection, 'arc');
+    updateNodePositions(this.nodeSelection);
+  }
+
+  _renderHive(nodes, links, scales, width, height, meta) {
+    const hiveResult = createHiveLayout(nodes, links, {
+      width,
+      height,
+      maxPosition: meta.maxPosition,
+    });
+
+    renderHiveAxes(this.zoomGroup, hiveResult);
+
+    const nodeById = new Map(nodes.map((n) => [n.id, n]));
+    const resolvedLinks = links.map((l) => ({
+      ...l,
+      source: nodeById.get(typeof l.source === 'object' ? l.source.id : l.source) || l.source,
+      target: nodeById.get(typeof l.target === 'object' ? l.target.id : l.target) || l.target,
+    }));
+
+    this.linkSelection = renderLinks(this.linkGroup, resolvedLinks, scales);
+    this.nodeSelection = renderNodes(this.nodeGroup, nodes, scales, this.callbacks);
+
+    updateLinkPaths(this.linkSelection, 'hive');
     updateNodePositions(this.nodeSelection);
   }
 
