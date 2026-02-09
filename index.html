@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Language Networks — Positional Character Trie Visualization</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <div id="app">
+    <header id="controls">
+      <div class="control-group">
+        <label for="corpus-select">Corpus:</label>
+        <select id="corpus-select">
+          <option value="english-alice">English — Alice in Wonderland</option>
+          <option value="german-kafka">German — Kafka</option>
+          <option value="english-common">English — 500 Common Words</option>
+          <option value="upload">Upload .txt file…</option>
+          <option value="fetch-url">Fetch from URL…</option>
+          <option value="dwds-wordlist">DWDS Dictionary</option>
+          <option value="dwds-goethe-a1">DWDS Goethe A1</option>
+          <option value="dwds-goethe-a2">DWDS Goethe A2</option>
+          <option value="dwds-goethe-b1">DWDS Goethe B1</option>
+        </select>
+        <input type="file" id="file-upload" accept=".txt" hidden />
+        <input type="text" id="url-input" placeholder="Enter URL…" hidden />
+        <button id="url-fetch-btn" hidden>Fetch</button>
+      </div>
+
+      <div class="control-group">
+        <label>Layout:</label>
+        <label class="radio-label"><input type="radio" name="layout" value="force" checked /> Force</label>
+        <label class="radio-label"><input type="radio" name="layout" value="radial" /> Radial</label>
+      </div>
+
+      <div class="control-group">
+        <label for="weight-slider">Min weight:</label>
+        <input type="range" id="weight-slider" min="1" max="100" value="1" />
+        <span id="weight-value">1</span>
+      </div>
+
+      <div class="control-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="show-end" /> Show END nodes
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label for="word-input">Word:</label>
+        <input type="text" id="word-input" placeholder="Type to highlight path…" />
+      </div>
+
+      <div class="control-group stats" id="stats">
+        <span id="stat-words">0 words</span>
+        <span id="stat-chars">0 chars</span>
+        <span id="stat-depth">depth 0</span>
+        <span id="stat-edges">0 edges</span>
+      </div>
+    </header>
+
+    <div id="loading" hidden>
+      <div class="spinner"></div>
+      <span>Processing corpus…</span>
+    </div>
+
+    <main id="viz-container"></main>
+
+    <div id="tooltip" class="tooltip" hidden></div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

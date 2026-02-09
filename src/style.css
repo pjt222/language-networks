@@ -1,0 +1,289 @@
+:root {
+  --bg: #0f1117;
+  --bg-surface: #1a1d27;
+  --bg-control: #252836;
+  --text: #e0e0e8;
+  --text-muted: #888898;
+  --accent: #6c8aff;
+  --accent-hover: #8da4ff;
+  --border: #2a2d3a;
+  --tooltip-bg: #1e2030;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  color-scheme: dark;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+#app {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Controls bar */
+#controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  z-index: 10;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.control-group label {
+  color: var(--text-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.radio-label, .checkbox-label {
+  color: var(--text) !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-size: 13px !important;
+  cursor: pointer;
+}
+
+select, input[type="text"], button {
+  background: var(--bg-control);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+select:focus, input[type="text"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+button {
+  cursor: pointer;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+button:hover {
+  background: var(--accent-hover);
+}
+
+input[type="range"] {
+  width: 120px;
+  accent-color: var(--accent);
+}
+
+#weight-value {
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5em;
+  text-align: right;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.stats {
+  margin-left: auto;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stats span {
+  padding: 2px 6px;
+  background: var(--bg-control);
+  border-radius: 3px;
+}
+
+/* Visualization area */
+#viz-container {
+  position: relative;
+  overflow: hidden;
+}
+
+#viz-container svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Loading indicator */
+#loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-surface);
+  padding: 16px 24px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  z-index: 20;
+  color: var(--text-muted);
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--tooltip-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  max-width: 320px;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.tooltip .tt-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.tooltip .tt-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.tooltip .tt-label {
+  color: var(--text-muted);
+}
+
+.tooltip .tt-value {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.tooltip .tt-examples {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* SVG styles */
+.node circle {
+  stroke: var(--bg);
+  stroke-width: 1.5;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.node text {
+  fill: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  pointer-events: none;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.node.root circle {
+  fill: var(--accent);
+}
+
+.node.end-node circle {
+  fill: #555;
+  stroke-dasharray: 3 2;
+}
+
+.link {
+  fill: none;
+  stroke-linecap: round;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.link.self-loop {
+  fill: none;
+}
+
+/* Highlight states */
+.dimmed {
+  opacity: 0.08 !important;
+}
+
+.highlighted circle {
+  stroke: #fff;
+  stroke-width: 3;
+}
+
+.highlighted-link {
+  stroke: #fff !important;
+  opacity: 1 !important;
+}
+
+/* Arrow markers */
+marker path {
+  fill: inherit;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  #controls {
+    gap: 8px;
+    padding: 6px 10px;
+  }
+
+  .control-group label {
+    font-size: 11px;
+  }
+
+  .stats {
+    display: none;
+  }
+
+  input[type="range"] {
+    width: 80px;
+  }
+}
