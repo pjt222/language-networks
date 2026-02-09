@@ -1,25 +1,12 @@
 import * as d3 from 'd3';
 
-export function setupArrowMarkers(svg, edgeColorScale, links) {
-  const defs = svg.select('defs').empty() ? svg.append('defs') : svg.select('defs');
-  defs.selectAll('marker').remove();
-
-  defs
-    .append('marker')
-    .attr('id', 'arrowhead')
-    .attr('viewBox', '0 -5 10 10')
-    .attr('refX', 10)
-    .attr('refY', 0)
-    .attr('markerWidth', 6)
-    .attr('markerHeight', 6)
-    .attr('orient', 'auto')
-    .append('path')
-    .attr('d', 'M0,-4L10,0L0,4')
-    .attr('fill', '#888');
-}
-
 export function renderLinks(container, links, scales, isRadial = false) {
   const { edgeWidthScale, edgeColorScale } = scales;
+
+  const weightExtent = d3.extent(links, (d) => d.weight);
+  const normalizeWeight = weightExtent[1] === weightExtent[0]
+    ? () => 0
+    : (w) => (w - weightExtent[0]) / (weightExtent[1] - weightExtent[0]);
 
   const linkSelection = container
     .selectAll('.link')
@@ -34,8 +21,7 @@ export function renderLinks(container, links, scales, isRadial = false) {
   linkMerge
     .attr('stroke', (d) => edgeColorScale(d.weight))
     .attr('stroke-width', (d) => edgeWidthScale(d.weight))
-    .attr('stroke-opacity', 0.7)
-    .attr('marker-end', 'url(#arrowhead)');
+    .attr('stroke-opacity', (d) => 0.4 + normalizeWeight(d.weight) * 0.5);
 
   return linkMerge;
 }
@@ -65,7 +51,7 @@ export function renderNodes(container, nodes, scales, callbacks = {}) {
     .select('circle')
     .attr('r', (d) => nodeSizeScale(d.frequency))
     .attr('fill', (d) => {
-      if (d.character === 'ROOT') return '#6c8aff';
+      if (d.character === 'ROOT') return '#7a8fff';
       if (d.character === 'END') return '#555';
       return nodeColorScale(d.character);
     });

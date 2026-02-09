@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Downloaded corpora (re-download with: npm run download-corpora)
+public/data/

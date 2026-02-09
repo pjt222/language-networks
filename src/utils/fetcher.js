@@ -15,6 +15,11 @@ function stripGutenbergBoilerplate(text) {
   return text.trim();
 }
 
+function extractLemma(entry) {
+  if (typeof entry === 'string') return entry;
+  return entry.sch?.[0]?.lemma || entry.lemma || entry.word || '';
+}
+
 export async function fetchFromUrl(url) {
   let fetchUrl = url;
 
@@ -38,26 +43,44 @@ export async function fetchFromUrl(url) {
 }
 
 export async function fetchDWDSWordList() {
-  const response = await fetch('/dwds-static/dwds_static/wb/dwdswb-headwords.json');
+  const localPath = '/data/dwds/dwdswb-headwords.json';
+  const remotePath = '/dwds-static/dwds_static/wb/dwdswb-headwords.json';
+
+  let response = await fetch(localPath).catch(() => null);
+
+  if (!response || !response.ok) {
+    response = await fetch(remotePath);
+  }
+
   if (!response.ok) {
     throw new Error(`DWDS fetch failed: ${response.status}`);
   }
+
   const data = await response.json();
   if (Array.isArray(data)) {
-    return data.map((entry) => (typeof entry === 'string' ? entry : entry.lemma || entry.word || '')).filter(Boolean);
+    return data.map(extractLemma).filter(Boolean);
   }
   return [];
 }
 
 export async function fetchDWDSGoethe(level) {
-  const url = `/dwds-static/dwds_static/wb/goethe-${level}.json`;
-  const response = await fetch(url);
+  const normalizedLevel = level.toUpperCase();
+  const localPath = `/data/dwds/goethe-${normalizedLevel}.json`;
+  const remotePath = `/dwds-api/api/lemma/goethe/${normalizedLevel}.json`;
+
+  let response = await fetch(localPath).catch(() => null);
+
+  if (!response || !response.ok) {
+    response = await fetch(remotePath);
+  }
+
   if (!response.ok) {
     throw new Error(`DWDS Goethe fetch failed: ${response.status}`);
   }
+
   const data = await response.json();
   if (Array.isArray(data)) {
-    return data.map((entry) => (typeof entry === 'string' ? entry : entry.lemma || entry.word || '')).filter(Boolean);
+    return data.map(extractLemma).filter(Boolean);
   }
   return [];
 }

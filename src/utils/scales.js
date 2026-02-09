@@ -11,9 +11,9 @@ export function createNodeSizeScale(nodes) {
 export function createEdgeWidthScale(links) {
   const weights = links.map((l) => l.weight);
   return d3
-    .scaleLinear()
+    .scaleSqrt()
     .domain([d3.min(weights) || 1, d3.max(weights) || 1])
-    .range([1, 10]);
+    .range([1, 8]);
 }
 
 export function createEdgeColorScale(links) {
@@ -23,8 +23,13 @@ export function createEdgeColorScale(links) {
     .domain([d3.min(weights) || 1, d3.max(weights) || 1]);
 }
 
+const warmNeutralPalette = [
+  '#ff9966', '#ffcc66', '#99cc99', '#66b3cc', '#cc99cc',
+  '#ccaa88', '#88ccaa', '#cc8888', '#aaaacc', '#ccccaa',
+];
+
 export function createNodeColorScale() {
-  return d3.scaleOrdinal(d3.schemeTableau10);
+  return d3.scaleOrdinal(warmNeutralPalette);
 }
 
 export function createPositionXScale(maxPosition, width) {

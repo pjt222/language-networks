@@ -50,7 +50,7 @@
         <input type="text" id="word-input" placeholder="Type to highlight path…" />
       </div>
 
-      <div class="control-group stats" id="stats">
+      <div class="control-group stats" id="stats" role="status" aria-live="polite">
         <span id="stat-words">0 words</span>
         <span id="stat-chars">0 chars</span>
         <span id="stat-depth">depth 0</span>
@@ -58,10 +58,12 @@
       </div>
     </header>
 
-    <div id="loading" hidden>
+    <div id="loading" role="status" aria-live="polite" hidden>
       <div class="spinner"></div>
       <span>Processing corpus…</span>
     </div>
+
+    <div id="error-banner" hidden></div>
 
     <main id="viz-container"></main>
 

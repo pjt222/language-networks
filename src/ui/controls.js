@@ -104,3 +104,16 @@ export function updateWeightSliderRange(maxWeight) {
 export function showLoading(show) {
   document.getElementById('loading').hidden = !show;
 }
+
+let errorDismissTimer = null;
+
+export function showError(message) {
+  const banner = document.getElementById('error-banner');
+  banner.textContent = message;
+  banner.hidden = false;
+
+  clearTimeout(errorDismissTimer);
+  errorDismissTimer = setTimeout(() => {
+    banner.hidden = true;
+  }, 8000);
+}
