@@ -63,7 +63,9 @@ export function renderNodes(container, nodes, scales, callbacks = {}) {
       if (d.character === 'END') return '\u25A0';
       return d.character;
     })
-    .attr('font-size', (d) => Math.max(8, Math.min(nodeSizeScale(d.frequency) * 1.1, 16)));
+    .attr('font-size', (d) => Math.max(8, Math.min(nodeSizeScale(d.frequency) * 1.1, 16)))
+    .attr('dy', '0.35em')
+    .attr('text-anchor', 'middle');
 
   if (callbacks.onMouseOver) {
     nodeMerge.on('mouseover', callbacks.onMouseOver);

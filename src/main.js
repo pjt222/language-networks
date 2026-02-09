@@ -10,6 +10,7 @@ import { fetchFromUrl, fetchDWDSWordList, fetchDWDSGoethe } from './utils/fetche
 
 let currentGraphData = null;
 let includeTerminal = false;
+let currentPalette = 'viridis';
 let layoutManager = null;
 
 function initApp() {
@@ -31,6 +32,7 @@ function initApp() {
     onMinWeightChange: handleMinWeightChange,
     onShowEndChange: handleShowEndChange,
     onWordInput: handleWordInput,
+    onPaletteChange: handlePaletteChange,
   });
 
   document.addEventListener('keydown', (event) => {
@@ -122,6 +124,12 @@ function handleShowEndChange(showEnd) {
   includeTerminal = showEnd;
   const corpusSelect = document.getElementById('corpus-select');
   handleCorpusChange(corpusSelect.value);
+}
+
+function handlePaletteChange(palette) {
+  currentPalette = palette;
+  layoutManager.setPalette(palette);
+  layoutManager.render();
 }
 
 function handleWordInput(word) {

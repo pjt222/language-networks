@@ -36,7 +36,7 @@ export function createForceLayout(nodes, links, { width, height, maxPosition }) 
     )
     .force(
       'collide',
-      d3.forceCollide().radius((d) => (d._radius || 8) + 2).strength(0.7)
+      d3.forceCollide().radius((d) => (d._radius || 8) + 4).strength(0.9).iterations(3)
     )
     .alphaDecay(0.02)
     .velocityDecay(0.3);

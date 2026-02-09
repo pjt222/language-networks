@@ -20,6 +20,7 @@ export class LayoutManager {
     this.container = containerElement;
     this.graphData = null;
     this.currentLayout = 'force';
+    this.palette = 'viridis';
     this.minWeight = 1;
     this.simulation = null;
     this.svg = null;
@@ -71,6 +72,10 @@ export class LayoutManager {
     this.currentLayout = layoutType;
   }
 
+  setPalette(palette) {
+    this.palette = palette;
+  }
+
   setMinWeight(minWeight) {
     this.minWeight = minWeight;
   }
@@ -112,8 +117,8 @@ export class LayoutManager {
 
     const nodeSizeScale = createNodeSizeScale(nodes);
     const edgeWidthScale = createEdgeWidthScale(links);
-    const edgeColorScale = createEdgeColorScale(links);
-    const nodeColorScale = createNodeColorScale();
+    const edgeColorScale = createEdgeColorScale(links, this.palette);
+    const nodeColorScale = createNodeColorScale(this.palette);
 
     for (const node of nodes) {
       node._radius = nodeSizeScale(node.frequency);

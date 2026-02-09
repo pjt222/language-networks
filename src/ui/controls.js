@@ -1,4 +1,4 @@
-export function setupControls({ onCorpusChange, onLayoutChange, onMinWeightChange, onShowEndChange, onWordInput }) {
+export function setupControls({ onCorpusChange, onLayoutChange, onMinWeightChange, onShowEndChange, onWordInput, onPaletteChange }) {
   const corpusSelect = document.getElementById('corpus-select');
   const fileUpload = document.getElementById('file-upload');
   const urlInput = document.getElementById('url-input');
@@ -8,6 +8,7 @@ export function setupControls({ onCorpusChange, onLayoutChange, onMinWeightChang
   const weightValue = document.getElementById('weight-value');
   const showEndCheckbox = document.getElementById('show-end');
   const wordInput = document.getElementById('word-input');
+  const paletteSelect = document.getElementById('palette-select');
 
   corpusSelect.addEventListener('change', () => {
     const value = corpusSelect.value;
@@ -69,6 +70,10 @@ export function setupControls({ onCorpusChange, onLayoutChange, onMinWeightChang
 
   showEndCheckbox.addEventListener('change', () => {
     onShowEndChange(showEndCheckbox.checked);
+  });
+
+  paletteSelect.addEventListener('change', () => {
+    onPaletteChange(paletteSelect.value);
   });
 
   let wordDebounceTimer = null;

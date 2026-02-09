@@ -34,12 +34,13 @@ describe('createEdgeColorScale', () => {
     const scale = createEdgeColorScale([{ weight: 1 }, { weight: 10 }]);
     const color = scale(5);
     expect(typeof color).toBe('string');
-    expect(color).toMatch(/^rgb/);
+    expect(color).toMatch(/^(rgb|#)/);
+
   });
 });
 
 describe('createNodeColorScale', () => {
-  it('returns an ordinal scale with the warm palette', () => {
+  it('returns an ordinal scale with viridis colors', () => {
     const scale = createNodeColorScale();
     const color = scale('a');
     expect(typeof color).toBe('string');

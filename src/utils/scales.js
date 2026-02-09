@@ -16,20 +16,28 @@ export function createEdgeWidthScale(links) {
     .range([1, 8]);
 }
 
-export function createEdgeColorScale(links) {
+function getInterpolator(paletteName) {
+  const interpolators = {
+    viridis: d3.interpolateViridis,
+    magma: d3.interpolateMagma,
+    inferno: d3.interpolateInferno,
+    plasma: d3.interpolatePlasma,
+    cividis: d3.interpolateCividis,
+  };
+  return interpolators[paletteName] || d3.interpolateViridis;
+}
+
+export function createEdgeColorScale(links, palette = 'viridis') {
   const weights = links.map((l) => l.weight);
   return d3
-    .scaleSequential(d3.interpolateYlOrRd)
+    .scaleSequential(getInterpolator(palette))
     .domain([d3.min(weights) || 1, d3.max(weights) || 1]);
 }
 
-const warmNeutralPalette = [
-  '#ff9966', '#ffcc66', '#99cc99', '#66b3cc', '#cc99cc',
-  '#ccaa88', '#88ccaa', '#cc8888', '#aaaacc', '#ccccaa',
-];
-
-export function createNodeColorScale() {
-  return d3.scaleOrdinal(warmNeutralPalette);
+export function createNodeColorScale(palette = 'viridis') {
+  const interpolator = getInterpolator(palette);
+  const colors = d3.range(10).map((i) => interpolator(i / 9));
+  return d3.scaleOrdinal(colors);
 }
 
 export function createPositionXScale(maxPosition, width) {
