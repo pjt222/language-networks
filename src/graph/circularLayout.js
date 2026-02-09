@@ -17,17 +17,11 @@ export function createCircularLayout(nodes, links, { width, height }) {
     indexById.set(node.id, i);
   });
 
-  // Compute adaptive radius: ensure adjacent nodes don't overlap
-  const maxNodeRadius = Math.max(...nodes.map((n) => n._radius || 10));
-  const minCircumference = nodes.length * (maxNodeRadius * 2 + 4);
-  const minRadius = minCircumference / (2 * Math.PI);
-  const adaptiveRadius = Math.max(layoutRadius, minRadius);
-
   for (const node of nodes) {
     const index = indexById.get(node.id);
     const angle = (index / nodes.length) * 2 * Math.PI - Math.PI / 2;
-    node.x = centerX + adaptiveRadius * Math.cos(angle);
-    node.y = centerY + adaptiveRadius * Math.sin(angle);
+    node.x = centerX + layoutRadius * Math.cos(angle);
+    node.y = centerY + layoutRadius * Math.sin(angle);
   }
 
   resolveCollisions(nodes, { positionStrength: 0.8, ticks: 30 });
@@ -35,10 +29,10 @@ export function createCircularLayout(nodes, links, { width, height }) {
   // Annotate links with layout center for arc path computation
   for (const link of links) {
     link._layoutCenter = { x: centerX, y: centerY };
-    link._layoutRadius = adaptiveRadius;
+    link._layoutRadius = layoutRadius;
   }
 
-  return { centerX, centerY, layoutRadius: adaptiveRadius };
+  return { centerX, centerY, layoutRadius };
 }
 
 export function renderCircularPositionMarkers(container, nodes, { centerX, centerY, layoutRadius }) {
