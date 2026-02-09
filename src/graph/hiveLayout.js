@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import { resolveCollisions } from './resolveCollisions.js';
 
 export function createHiveLayout(nodes, links, { width, height, maxPosition }) {
   const centerX = width / 2;
@@ -20,9 +21,9 @@ export function createHiveLayout(nodes, links, { width, height, maxPosition }) {
     const distanceFromCenter = freqScale(node.frequency);
     node.x = centerX + distanceFromCenter * Math.cos(axisAngle);
     node.y = centerY + distanceFromCenter * Math.sin(axisAngle);
-    node.fx = node.x;
-    node.fy = node.y;
   }
+
+  resolveCollisions(nodes, { positionStrength: 0.4, ticks: 80, collisionIterations: 4 });
 
   return { centerX, centerY, maxAxisLength, axisCount, freqScale };
 }

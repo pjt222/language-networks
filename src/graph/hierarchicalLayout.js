@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import { buildHierarchyFromGraph } from './hierarchyBuilder.js';
 import { createPositionXScale } from '../utils/scales.js';
+import { resolveCollisions } from './resolveCollisions.js';
 
 export function createHierarchicalLayout(nodes, links, { width, height, maxPosition }) {
   const margin = { top: 40, right: 80, bottom: 40, left: 80 };
@@ -33,9 +34,9 @@ export function createHierarchicalLayout(nodes, links, { width, height, maxPosit
       node.x = positionXScale(node.position);
       node.y = height / 2;
     }
-    node.fx = node.x;
-    node.fy = node.y;
   }
+
+  resolveCollisions(nodes, { positionStrength: 0.5 });
 
   return { treeEdges };
 }

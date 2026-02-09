@@ -48,15 +48,15 @@ export function createRadialLayout(nodes, links, { width, height, maxPosition })
     .forceSimulation(nodes)
     .force(
       'radial',
-      d3.forceRadial((d) => d._targetRadius, centerX, centerY).strength(0.8)
+      d3.forceRadial((d) => d._targetRadius, centerX, centerY).strength(0.5)
     )
     .force(
       'charge',
-      d3.forceManyBody().strength(-60).distanceMax(200)
+      d3.forceManyBody().strength(-80).distanceMax(200)
     )
     .force(
       'collide',
-      d3.forceCollide().radius((d) => (d._radius || 10) + 4).strength(0.9).iterations(3)
+      d3.forceCollide().radius((d) => (d._radius || 10) + 4).strength(1.0).iterations(4)
     )
     .force(
       'link',

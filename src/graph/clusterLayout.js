@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 import { buildHierarchyFromGraph } from './hierarchyBuilder.js';
+import { resolveCollisions } from './resolveCollisions.js';
 
 export function createClusterLayout(nodes, links, { width, height }) {
   const margin = { top: 40, right: 80, bottom: 40, left: 80 };
@@ -29,9 +30,9 @@ export function createClusterLayout(nodes, links, { width, height }) {
       node.x = width / 2;
       node.y = height / 2;
     }
-    node.fx = node.x;
-    node.fy = node.y;
   }
+
+  resolveCollisions(nodes, { positionStrength: 0.5, ticks: 60 });
 
   return { treeEdges };
 }
