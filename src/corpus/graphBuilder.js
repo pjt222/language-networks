@@ -109,6 +109,73 @@ export function buildGraph(words, { includeTerminal = false } = {}) {
   return { nodes, links, meta, trie };
 }
 
+export function buildBackgroundLayer(realGraph) {
+  const { nodes: realNodes, meta } = realGraph;
+  const maxPosition = meta.maxPosition;
+  if (maxPosition < 1) return { nodes: [], links: [] };
+
+  const alphabet = Array.from(
+    new Set(
+      realNodes
+        .map((n) => n.character)
+        .filter((c) => c !== 'ROOT' && c !== 'END')
+    )
+  ).sort();
+
+  if (alphabet.length === 0) return { nodes: [], links: [] };
+
+  const bgId = (pos, char) => `BG_p${pos}_c${char}`;
+  const nodes = [];
+  const links = [];
+
+  for (let pos = 1; pos <= maxPosition; pos++) {
+    for (const char of alphabet) {
+      nodes.push({
+        id: bgId(pos, char),
+        position: pos,
+        character: char,
+        frequency: 1,
+        _background: true,
+      });
+    }
+  }
+
+  for (const char of alphabet) {
+    links.push({
+      source: ROOT_ID,
+      target: bgId(1, char),
+      weight: 1,
+      examples: [],
+      _background: true,
+    });
+  }
+
+  for (let pos = 1; pos < maxPosition; pos++) {
+    for (const c1 of alphabet) {
+      for (const c2 of alphabet) {
+        links.push({
+          source: bgId(pos, c1),
+          target: bgId(pos + 1, c2),
+          weight: 1,
+          examples: [],
+          _background: true,
+        });
+      }
+    }
+  }
+
+  return { nodes, links };
+}
+
+export function mergeBackground(realGraph, background) {
+  // Background first → rendered behind real nodes/links (SVG painter's algorithm)
+  return {
+    ...realGraph,
+    nodes: [...background.nodes, ...realGraph.nodes],
+    links: [...background.links, ...realGraph.links],
+  };
+}
+
 export function getWordPath(word, graphData) {
   const chars = [...word.normalize('NFC').toLowerCase()];
   const path = [ROOT_ID];

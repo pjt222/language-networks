@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildGraph, getWordPath, ROOT_ID } from '../src/corpus/graphBuilder.js';
+import { buildGraph, getWordPath, buildBackgroundLayer, mergeBackground, ROOT_ID } from '../src/corpus/graphBuilder.js';
 
 describe('buildGraph', () => {
   it('creates ROOT node', () => {
@@ -193,5 +193,44 @@ describe('getWordPath', () => {
 
     // Position 4 'n' — different nodes
     expect(pathNeun[4]).not.toBe(pathNaun[4]);
+  });
+});
+
+describe('buildBackgroundLayer', () => {
+  it('returns empty graph when alphabet empty or maxPosition zero', () => {
+    const empty = buildBackgroundLayer({ nodes: [], meta: { maxPosition: 0 } });
+    expect(empty.nodes).toEqual([]);
+    expect(empty.links).toEqual([]);
+  });
+
+  it('creates alphabet × maxPosition background nodes with freq=1', () => {
+    const real = buildGraph(['ab', 'ba']);
+    const bg = buildBackgroundLayer(real);
+    // Alphabet = {a, b}, maxPosition = 2 → 2 × 2 = 4 background nodes
+    expect(bg.nodes.length).toBe(4);
+    for (const n of bg.nodes) {
+      expect(n.frequency).toBe(1);
+      expect(n._background).toBe(true);
+    }
+  });
+
+  it('creates ROOT→pos1 fan + full bipartite between adjacent positions', () => {
+    const real = buildGraph(['ab', 'ba']);
+    const bg = buildBackgroundLayer(real);
+    // ROOT → 2 chars at pos1 = 2 edges
+    // pos1 (2 chars) × pos2 (2 chars) = 4 edges
+    expect(bg.links.length).toBe(2 + 4);
+    for (const l of bg.links) {
+      expect(l.weight).toBe(1);
+      expect(l._background).toBe(true);
+    }
+  });
+
+  it('mergeBackground prepends background so it renders behind real graph', () => {
+    const real = buildGraph(['ab']);
+    const bg = buildBackgroundLayer(real);
+    const merged = mergeBackground(real, bg);
+    expect(merged.nodes[0]._background).toBe(true);
+    expect(merged.nodes[merged.nodes.length - 1]._background).toBeUndefined();
   });
 });

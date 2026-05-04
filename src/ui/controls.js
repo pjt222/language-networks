@@ -1,4 +1,4 @@
-export function setupControls({ onCorpusChange, onLayoutChange, onMinWeightChange, onShowEndChange, onWordInput, onPaletteChange }) {
+export function setupControls({ onCorpusChange, onLayoutChange, onMinWeightChange, onShowEndChange, onShowBackgroundChange, onWordInput, onPaletteChange }) {
   const corpusSelect = document.getElementById('corpus-select');
   const fileUpload = document.getElementById('file-upload');
   const urlInput = document.getElementById('url-input');
@@ -7,6 +7,7 @@ export function setupControls({ onCorpusChange, onLayoutChange, onMinWeightChang
   const weightSlider = document.getElementById('weight-slider');
   const weightValue = document.getElementById('weight-value');
   const showEndCheckbox = document.getElementById('show-end');
+  const showBackgroundCheckbox = document.getElementById('show-background');
   const wordInput = document.getElementById('word-input');
   const paletteSelect = document.getElementById('palette-select');
 
@@ -71,6 +72,12 @@ export function setupControls({ onCorpusChange, onLayoutChange, onMinWeightChang
   showEndCheckbox.addEventListener('change', () => {
     onShowEndChange(showEndCheckbox.checked);
   });
+
+  if (showBackgroundCheckbox && onShowBackgroundChange) {
+    showBackgroundCheckbox.addEventListener('change', () => {
+      onShowBackgroundChange(showBackgroundCheckbox.checked);
+    });
+  }
 
   paletteSelect.addEventListener('change', () => {
     onPaletteChange(paletteSelect.value);

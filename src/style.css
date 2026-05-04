@@ -53,7 +53,8 @@ body {
   white-space: nowrap;
 }
 
-.control-group label {
+.control-group label,
+.control-group .group-label {
   color: var(--text-muted);
   font-size: 12px;
   text-transform: uppercase;
@@ -319,6 +320,30 @@ input[type="range"] {
   fill: none;
 }
 
+/* Background lattice (all-positions × all-chars scaffold, freq=1, weight=1) */
+.node.background circle {
+  fill: #6a6a78;
+  stroke: none;
+  opacity: 0.18;
+  pointer-events: none;
+  cursor: default;
+}
+
+.node.background text {
+  fill: #6a6a78;
+  opacity: 0.35;
+  pointer-events: none;
+  font-weight: 400;
+}
+
+.link.background {
+  stroke: #5a5a68 !important;
+  stroke-opacity: 0.08 !important;
+  stroke-width: 0.5 !important;
+  pointer-events: none;
+  cursor: default;
+}
+
 /* Highlight states */
 .dimmed {
   opacity: 0.15 !important;
@@ -353,7 +378,8 @@ input[type="range"] {
     padding: 6px 10px;
   }
 
-  .control-group label {
+  .control-group label,
+  .control-group .group-label {
     font-size: 11px;
   }
 

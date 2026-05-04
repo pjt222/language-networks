@@ -2,6 +2,10 @@ import * as d3 from 'd3';
 import { ROOT_ID } from '../corpus/graphBuilder.js';
 import { createForceLayout, setupDrag } from './forceLayout.js';
 import { createRadialLayout, renderRadialRings } from './radialLayout.js';
+import {
+  createCircularTreeDepthLayout,
+  createCircularTreePositionLayout,
+} from './circularTreeLayout.js';
 import { createHierarchicalLayout } from './hierarchicalLayout.js';
 import { createClusterLayout } from './clusterLayout.js';
 import { createCircularLayout, renderCircularPositionMarkers } from './circularLayout.js';
@@ -109,6 +113,8 @@ export class LayoutManager {
 
   render() {
     if (this.simulation) {
+      this.simulation.on('tick', null);
+      this.simulation.on('end', null);
       this.simulation.stop();
       this.simulation = null;
     }
@@ -150,6 +156,12 @@ export class LayoutManager {
         break;
       case 'radial':
         this._renderRadial(nodes, resolvedLinks, scales, width, height, meta);
+        break;
+      case 'circularTreeDepth':
+        this._renderCircularTreeDepth(nodes, resolvedLinks, scales, width, height, meta);
+        break;
+      case 'circularTreePosition':
+        this._renderCircularTreePosition(nodes, resolvedLinks, scales, width, height, meta);
         break;
       case 'hierarchical':
         this._renderHierarchical(nodes, resolvedLinks, scales, width, height, meta);
@@ -208,6 +220,52 @@ export class LayoutManager {
       updateLinkPaths(this.linkSelection, 'radial');
       updateNodePositions(this.nodeSelection);
     });
+  }
+
+  _renderCircularTreeDepth(nodes, links, scales, width, height, meta) {
+    const { radiusScale, centerX, centerY } = createCircularTreeDepthLayout(nodes, links, {
+      width,
+      height,
+      maxPosition: meta.maxPosition,
+    });
+
+    renderRadialRings(this.zoomGroup, meta.maxPosition, radiusScale, centerX, centerY);
+
+    const nodeById = new Map(nodes.map((n) => [n.id, n]));
+    const resolvedLinks = links.map((l) => ({
+      ...l,
+      source: nodeById.get(typeof l.source === 'object' ? l.source.id : l.source) || l.source,
+      target: nodeById.get(typeof l.target === 'object' ? l.target.id : l.target) || l.target,
+    }));
+
+    this.linkSelection = renderLinks(this.linkGroup, resolvedLinks, scales);
+    this.nodeSelection = renderNodes(this.nodeGroup, nodes, scales, this.callbacks);
+
+    updateLinkPaths(this.linkSelection, 'radial');
+    updateNodePositions(this.nodeSelection);
+  }
+
+  _renderCircularTreePosition(nodes, links, scales, width, height, meta) {
+    const { radiusScale, centerX, centerY } = createCircularTreePositionLayout(nodes, links, {
+      width,
+      height,
+      maxPosition: meta.maxPosition,
+    });
+
+    renderRadialRings(this.zoomGroup, meta.maxPosition, radiusScale, centerX, centerY);
+
+    const nodeById = new Map(nodes.map((n) => [n.id, n]));
+    const resolvedLinks = links.map((l) => ({
+      ...l,
+      source: nodeById.get(typeof l.source === 'object' ? l.source.id : l.source) || l.source,
+      target: nodeById.get(typeof l.target === 'object' ? l.target.id : l.target) || l.target,
+    }));
+
+    this.linkSelection = renderLinks(this.linkGroup, resolvedLinks, scales);
+    this.nodeSelection = renderNodes(this.nodeGroup, nodes, scales, this.callbacks);
+
+    updateLinkPaths(this.linkSelection, 'radial');
+    updateNodePositions(this.nodeSelection);
   }
 
   _renderHierarchical(nodes, links, scales, width, height, meta) {

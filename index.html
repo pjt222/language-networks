@@ -28,9 +28,11 @@
       </div>
 
       <div class="control-group">
-        <label>Layout:</label>
+        <span class="group-label">Layout:</span>
         <label class="radio-label"><input type="radio" name="layout" value="force" checked /> Force</label>
         <label class="radio-label"><input type="radio" name="layout" value="radial" /> Radial</label>
+        <label class="radio-label"><input type="radio" name="layout" value="circularTreeDepth" /> Circular Tree (depth)</label>
+        <label class="radio-label"><input type="radio" name="layout" value="circularTreePosition" /> Circular Tree (position)</label>
         <label class="radio-label"><input type="radio" name="layout" value="hierarchical" /> Tree</label>
         <label class="radio-label"><input type="radio" name="layout" value="cluster" /> Cluster</label>
         <label class="radio-label"><input type="radio" name="layout" value="circular" /> Circular</label>
@@ -57,6 +59,12 @@
       <div class="control-group">
         <label class="checkbox-label">
           <input type="checkbox" id="show-end" /> Show END nodes
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="show-background" /> Show background lattice
         </label>
       </div>
 

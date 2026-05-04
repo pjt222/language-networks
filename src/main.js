@@ -1,6 +1,6 @@
 import './style.css';
 import { processCorpus } from './corpus/processor.js';
-import { buildGraph } from './corpus/graphBuilder.js';
+import { buildGraph, buildBackgroundLayer, mergeBackground } from './corpus/graphBuilder.js';
 import { samples } from './corpus/samples.js';
 import { LayoutManager } from './graph/layoutManager.js';
 import { setupControls, updateStats, updateWeightSliderRange, showLoading, showError } from './ui/controls.js';
@@ -10,6 +10,7 @@ import { fetchFromUrl, fetchDWDSWordList, fetchDWDSGoethe } from './utils/fetche
 
 let currentGraphData = null;
 let includeTerminal = false;
+let showBackground = false;
 let currentPalette = 'viridis';
 let layoutManager = null;
 
@@ -31,6 +32,7 @@ function initApp() {
     onLayoutChange: handleLayoutChange,
     onMinWeightChange: handleMinWeightChange,
     onShowEndChange: handleShowEndChange,
+    onShowBackgroundChange: handleShowBackgroundChange,
     onWordInput: handleWordInput,
     onPaletteChange: handlePaletteChange,
   });
@@ -99,7 +101,11 @@ async function handleCorpusChange(corpusKey, extraData) {
     updateWeightSliderRange(maxWeight);
     updateStats(currentGraphData.meta);
 
-    layoutManager.setData(currentGraphData);
+    const renderData = showBackground
+      ? mergeBackground(currentGraphData, buildBackgroundLayer(currentGraphData))
+      : currentGraphData;
+
+    layoutManager.setData(renderData);
     layoutManager.setMinWeight(1);
     layoutManager.render();
   } catch (error) {
@@ -122,6 +128,12 @@ function handleMinWeightChange(minWeight) {
 
 function handleShowEndChange(showEnd) {
   includeTerminal = showEnd;
+  const corpusSelect = document.getElementById('corpus-select');
+  handleCorpusChange(corpusSelect.value);
+}
+
+function handleShowBackgroundChange(value) {
+  showBackground = value;
   const corpusSelect = document.getElementById('corpus-select');
   handleCorpusChange(corpusSelect.value);
 }

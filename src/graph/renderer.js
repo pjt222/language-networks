@@ -14,7 +14,10 @@ export function renderLinks(container, links, scales, isRadial = false) {
 
   linkSelection.exit().remove();
 
-  const linkEnter = linkSelection.enter().append('path').attr('class', 'link');
+  const linkEnter = linkSelection
+    .enter()
+    .append('path')
+    .attr('class', (d) => (d._background ? 'link background' : 'link'));
 
   const linkMerge = linkEnter.merge(linkSelection);
 
@@ -39,6 +42,7 @@ export function renderNodes(container, nodes, scales, callbacks = {}) {
     let className = 'node';
     if (d.character === 'ROOT') className += ' root';
     if (d.character === 'END') className += ' end-node';
+    if (d._background) className += ' background';
     return className;
   });
 

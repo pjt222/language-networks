@@ -28,3 +28,6 @@ backend/target/
 
 # Downloaded corpora (re-download with: npm run download-corpora)
 public/data/
+
+# Session handoff (ephemeral)
+CONTINUE_HERE.md
